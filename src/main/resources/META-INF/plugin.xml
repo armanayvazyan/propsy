@@ -1,0 +1,29 @@
+<idea-plugin>
+    <id>io.github.armanayvazyan.propstableview</id>
+    <name>Properties Table View</name>
+    <vendor>arman</vendor>
+
+    <description><![CDATA[
+        Shows configured .properties files as an editable Key/Value table in a tool window.
+        Paths are configured per-project in Settings | Tools | Properties Table View.
+        Edits preserve comments, blank lines and key order.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.properties</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceImplementation="io.github.armanayvazyan.propstableview.PropsViewSettings"/>
+        <projectConfigurable
+                parentId="tools"
+                instance="io.github.armanayvazyan.propstableview.PropsViewConfigurable"
+                id="io.github.armanayvazyan.propstableview.settings"
+                displayName="Properties Table View"/>
+        <toolWindow
+                id="Properties Table"
+                anchor="bottom"
+                factoryClass="io.github.armanayvazyan.propstableview.PropsTableToolWindowFactory"/>
+    </extensions>
+
+    <applicationListeners/>
+</idea-plugin>

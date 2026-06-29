@@ -1,0 +1,137 @@
+package io.github.armanayvazyan.propstableview
+
+import com.intellij.icons.AllIcons
+import com.intellij.lang.properties.psi.PropertiesFile
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.Messages
+import com.intellij.ui.ToolbarDecorator
+import com.intellij.ui.components.JBLabel
+import com.intellij.ui.table.JBTable
+import com.intellij.util.ui.JBUI
+import java.awt.BorderLayout
+import javax.swing.DefaultComboBoxModel
+import javax.swing.JPanel
+import javax.swing.ListSelectionModel
+
+/**
+ * Tool window content: a path picker on top and an editable Key/Value table below.
+ */
+class PropsTablePanel(
+    private val project: Project,
+    parentDisposable: Disposable,
+) : JPanel(BorderLayout()) {
+
+    private val comboModel = DefaultComboBoxModel<String>()
+    private val combo = ComboBox(comboModel)
+    private val statusLabel = JBLabel()
+    private val tableModel = PropsTableModel(project)
+    private val table = JBTable(tableModel)
+
+    /** Guards combo mutations in [refreshAll] so the action listener does not fire mid-rebuild. */
+    private var suppressComboEvents = false
+
+    init {
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+        table.setShowGrid(true)
+
+        combo.addActionListener { if (!suppressComboEvents) reloadSelectedFile() }
+
+        val top = JPanel(BorderLayout())
+        top.border = JBUI.Borders.empty(4)
+        top.add(combo, BorderLayout.CENTER)
+        top.add(statusLabel, BorderLayout.SOUTH)
+
+        val decorated = ToolbarDecorator.createDecorator(table)
+            .setAddAction { addRow() }
+            .setRemoveAction { removeRow() }
+            .addExtraAction(object : DumbAwareAction("Refresh", "Reload from disk", AllIcons.Actions.Refresh) {
+                override fun actionPerformed(e: AnActionEvent) = refreshAll()
+                override fun getActionUpdateThread() = ActionUpdateThread.EDT
+            })
+            .createPanel()
+
+        add(top, BorderLayout.NORTH)
+        add(decorated, BorderLayout.CENTER)
+
+        project.messageBus.connect(parentDisposable)
+            .subscribe(PropsViewSettings.CHANGED_TOPIC, Runnable { refreshAll() })
+
+        refreshAll()
+    }
+
+    /** Repopulates the combo from settings, keeping the current selection if still present. */
+    private fun refreshAll() {
+        val previous = combo.selectedItem as? String
+        val paths = PropsViewSettings.getInstance(project).paths
+        suppressComboEvents = true
+        try {
+            comboModel.removeAllElements()
+            comboModel.addAll(paths)
+            when {
+                paths.isEmpty() -> combo.selectedItem = null
+                previous != null && paths.contains(previous) -> combo.selectedItem = previous
+                else -> combo.selectedIndex = 0
+            }
+        } finally {
+            suppressComboEvents = false
+        }
+        if (paths.isEmpty()) {
+            tableModel.load(null)
+            statusLabel.text = "No paths configured. Add them in Settings | Tools | Properties Table View."
+        } else {
+            reloadSelectedFile()
+        }
+    }
+
+    private fun currentPath(): String? = combo.selectedItem as? String
+
+    private fun reloadSelectedFile() {
+        val path = currentPath() ?: run {
+            tableModel.load(null)
+            return
+        }
+        val file = PropertiesFileBridge.resolve(project, path)
+        if (file == null) {
+            tableModel.load(null)
+            statusLabel.text = "Cannot resolve '$path' (missing or not a .properties file)."
+        } else {
+            tableModel.load(file)
+            statusLabel.text = " "
+        }
+    }
+
+    private fun currentFileOrWarn(): PropertiesFile? {
+        val file = tableModel.currentFile()
+        if (file == null) {
+            Messages.showWarningDialog(project, "Select a resolvable properties file first.", "Properties Table View")
+        }
+        return file
+    }
+
+    private fun addRow() {
+        val file = currentFileOrWarn() ?: return
+        val key = Messages.showInputDialog(
+            project, "Property key:", "Add Property", null,
+        )?.trim()
+        if (key.isNullOrEmpty()) return
+        val added = PropertiesFileBridge.addEntry(project, file, key, "")
+        if (!added) {
+            Messages.showWarningDialog(project, "Key '$key' already exists.", "Add Property")
+            return
+        }
+        reloadSelectedFile()
+    }
+
+    private fun removeRow() {
+        val row = table.selectedRow
+        if (row < 0) return
+        val entry = tableModel.entryAt(table.convertRowIndexToModel(row)) ?: return
+        PropertiesFileBridge.deleteEntry(project, entry.property)
+        reloadSelectedFile()
+    }
+}
