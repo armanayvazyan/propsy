@@ -31,9 +31,13 @@ jobs:
           PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
         run: ./gradlew signPlugin
 
+      - name: Export release notes from CHANGELOG
+        run: ./gradlew getChangelog --console=plain -q --no-header --no-summary > release-notes.md
+
       - name: Attach plugin zip to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          body_path: release-notes.md
           files: build/distributions/*.zip
 
       # Publishes to JetBrains Marketplace. Remove this step if you only want

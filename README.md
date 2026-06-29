@@ -1,5 +1,8 @@
 # Propsy
 
+[![Build](https://github.com/armanayvazyan/propsy/actions/workflows/build.yml/badge.svg)](https://github.com/armanayvazyan/propsy/actions/workflows/build.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 IntelliJ plugin that shows configured `.properties` files as an **editable Key/Value table** in a tool window.
 
 - Configure file paths per-project in **Settings | Tools | Propsy** (paths are relative to the project root).
@@ -9,7 +12,7 @@ IntelliJ plugin that shows configured `.properties` files as an **editable Key/V
 ## Requirements
 
 - JDK 21
-- IntelliJ IDEA 2024.2 or newer (Community or Ultimate)
+- IntelliJ IDEA 2026.1 or newer (`sinceBuild = 261`; Community or Ultimate)
 - Internet access on first build (Gradle downloads the IntelliJ Platform)
 
 ## Build
@@ -65,3 +68,20 @@ src/main/kotlin/io/github/armanayvazyan/propsy/
 src/main/resources/META-INF/plugin.xml
 src/test/kotlin/io/github/armanayvazyan/propsy/   tests
 ```
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for build
+instructions and conventions, and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for
+community expectations. Use the [issue templates](.github/ISSUE_TEMPLATE/) to
+report bugs or request features. Notable changes are tracked in
+[CHANGELOG.md](CHANGELOG.md).
+
+## Security
+
+To report a vulnerability, see [SECURITY.md](SECURITY.md). Please do not file
+security issues publicly.
+
+## License
+
+Licensed under the [Apache License 2.0](LICENSE).

@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a problem with Propsy
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug! Please fill in the details below.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug, including what you expected to happen instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce the issue?
+      placeholder: |
+        1. Open Settings | Tools | Propsy
+        2. Add path '...'
+        3. Edit a cell
+        4. See error
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Propsy version
+      placeholder: "0.1.2"
+    validations:
+      required: true
+  - type: input
+    id: ide-version
+    attributes:
+      label: IDE name and version
+      placeholder: "IntelliJ IDEA 2026.1 (Community)"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "macOS 15.5"
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stack trace
+      description: Paste any relevant output from Help | Show Log in Finder/Explorer (idea.log).
+      render: shell
+    validations:
+      required: false
