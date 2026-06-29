@@ -40,12 +40,13 @@ jobs:
           body_path: release-notes.md
           files: build/distributions/*.zip
 
-      # Publishes to JetBrains Marketplace. Remove this step if you only want
-      # the zip attached to the GitHub Release.
-      - name: Publish to JetBrains Marketplace
-        env:
-          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
-        run: ./gradlew publishPlugin
+      # Publishes to JetBrains Marketplace. Disabled until the first version is
+      # uploaded manually via plugins.jetbrains.com (new plugins require
+      # moderation). Re-enable by uncommenting once the plugin page exists.
+      # - name: Publish to JetBrains Marketplace
+      #   env:
+      #     PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+      #     CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+      #     PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+      #     PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+      #   run: ./gradlew publishPlugin
