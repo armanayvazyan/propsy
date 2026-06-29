@@ -4,22 +4,49 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 class PropsViewSettingsTest : BasePlatformTestCase() {
 
-    fun testPathsRoundTripThroughState() {
+    fun testEntriesRoundTripThroughState() {
         val settings = PropsViewSettings.getInstance(project)
-        settings.paths = listOf("src/messages.properties", "config/app.properties")
+        settings.entries = listOf(
+            PathEntry("messages", "src/messages.properties"),
+            PathEntry("app", "config/app.properties"),
+        )
 
         val state = settings.state
         val restored = PropsViewSettings()
         restored.loadState(state)
 
-        assertEquals(listOf("src/messages.properties", "config/app.properties"), restored.paths)
+        assertEquals(
+            listOf(
+                PathEntry("messages", "src/messages.properties"),
+                PathEntry("app", "config/app.properties"),
+            ),
+            restored.entries,
+        )
     }
 
-    fun testPathsGetterReturnsDefensiveCopy() {
+    fun testLegacyPathsMigrateToEntries() {
+        val legacy = PropsViewSettings.State().apply {
+            paths = mutableListOf("src/messages.properties", "config/app.properties")
+        }
+        val settings = PropsViewSettings()
+        settings.loadState(legacy)
+
+        assertEquals(
+            listOf(
+                PathEntry("messages.properties", "src/messages.properties"),
+                PathEntry("app.properties", "config/app.properties"),
+            ),
+            settings.entries,
+        )
+        // legacy field cleared after migration
+        assertTrue(settings.state.paths.isEmpty())
+    }
+
+    fun testEntriesGetterReturnsDefensiveCopy() {
         val settings = PropsViewSettings.getInstance(project)
-        settings.paths = listOf("a.properties")
-        val first = settings.paths
-        settings.paths = listOf("a.properties", "b.properties")
+        settings.entries = listOf(PathEntry("a", "a.properties"))
+        val first = settings.entries
+        settings.entries = listOf(PathEntry("a", "a.properties"), PathEntry("b", "b.properties"))
         assertEquals(1, first.size)
     }
 }

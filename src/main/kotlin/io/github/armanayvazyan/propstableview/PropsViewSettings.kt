@@ -7,16 +7,39 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.util.messages.Topic
+import com.intellij.util.xmlb.annotations.Tag
+
+/** A named, serializable reference to a .properties file (path relative to project base dir). */
+@Tag("entry")
+class PathEntry() {
+    var name: String = ""
+    var path: String = ""
+
+    constructor(name: String, path: String) : this() {
+        this.name = name
+        this.path = path
+    }
+
+    override fun equals(other: Any?): Boolean =
+        other is PathEntry && other.name == name && other.path == path
+
+    override fun hashCode(): Int = 31 * name.hashCode() + path.hashCode()
+
+    override fun toString(): String = "PathEntry(name=$name, path=$path)"
+}
 
 /**
- * Per-project storage for the list of .properties file paths (relative to project root)
- * that should be shown in the Properties Table tool window.
+ * Per-project storage for the named list of .properties files shown in the
+ * Properties Table tool window. Legacy bare-path settings are migrated on load.
  */
 @Service(Service.Level.PROJECT)
 @State(name = "PropsViewSettings", storages = [Storage("propsTableView.xml")])
 class PropsViewSettings : PersistentStateComponent<PropsViewSettings.State> {
 
     class State {
+        var entries: MutableList<PathEntry> = mutableListOf()
+
+        /** Legacy field from pre-name versions; migrated into [entries] on load, then cleared. */
         var paths: MutableList<String> = mutableListOf()
     }
 
@@ -26,13 +49,29 @@ class PropsViewSettings : PersistentStateComponent<PropsViewSettings.State> {
 
     override fun loadState(state: State) {
         myState = state
+        if (myState.entries.isEmpty() && myState.paths.isNotEmpty()) {
+            myState.entries = myState.paths
+                .map { PathEntry(it.substringAfterLast('/'), it) }
+                .toMutableList()
+            myState.paths = mutableListOf()
+        }
     }
 
-    /** Paths relative to the project base dir. Always returns a defensive copy. */
-    var paths: List<String>
-        get() = myState.paths.toList()
+    /** Named entries. Always returns/stores defensive copies. */
+    var entries: List<PathEntry>
+        get() = myState.entries.map { PathEntry(it.name, it.path) }
         set(value) {
-            myState.paths = value.toMutableList()
+            myState.entries = value.map { PathEntry(it.name, it.path) }.toMutableList()
+        }
+
+    /**
+     * Transitional path-only view kept until [PropsTablePanel] migrates to [entries].
+     * Setting it names each entry by its filename.
+     */
+    var paths: List<String>
+        get() = myState.entries.map { it.path }
+        set(value) {
+            entries = value.map { PathEntry(it.substringAfterLast('/'), it) }
         }
 
     companion object {
