@@ -2,6 +2,7 @@ package io.github.armanayvazyan.propstableview
 
 import com.intellij.lang.properties.IProperty
 import com.intellij.lang.properties.psi.PropertiesFile
+import com.intellij.lang.properties.psi.Property
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
@@ -49,7 +50,9 @@ object PropertiesFileBridge {
     fun addEntry(project: Project, file: PropertiesFile, key: String, value: String): Boolean {
         if (ReadAction.compute<Boolean, RuntimeException> { file.findPropertyByKey(key) != null }) return false
         WriteCommandAction.runWriteCommandAction(project, "Add Property", null, {
-            file.addProperty(key, value)
+            // Append at the end to preserve existing key order (addProperty inserts alphabetically).
+            val anchor = file.properties.lastOrNull() as? Property
+            if (anchor != null) file.addPropertyAfter(key, value, anchor) else file.addProperty(key, value)
         }, file.containingFile)
         return true
     }

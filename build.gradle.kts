@@ -18,10 +18,11 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity("2026.1")
+        intellijIdea("2026.1")
         bundledPlugin("com.intellij.properties")
         testFramework(TestFrameworkType.Platform)
     }
+    testImplementation("junit:junit:4.13.2")
 }
 
 intellijPlatform {
