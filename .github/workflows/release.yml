@@ -35,7 +35,7 @@ jobs:
         run: ./gradlew getChangelog --console=plain -q --no-header --no-summary > release-notes.md
 
       - name: Attach plugin zip to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           body_path: release-notes.md
           files: build/distributions/*.zip
