@@ -12,7 +12,7 @@ IntelliJ plugin that shows configured `.properties` files as an **editable Key/V
 ## Requirements
 
 - JDK 21
-- IntelliJ IDEA 2026.1 or newer (`sinceBuild = 261`; Community or Ultimate)
+- IntelliJ IDEA 2025.2 or newer (`sinceBuild = 252`; Community or Ultimate)
 - Internet access on first build (Gradle downloads the IntelliJ Platform)
 
 ## Build
