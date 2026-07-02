@@ -22,6 +22,10 @@ import com.intellij.psi.search.GlobalSearchScope
  *
  * Handle (file) = [VirtualFile]. Entry handle = the same [VirtualFile]; the entry's
  * key locates its line on write.
+ *
+ * Note: automated tests always run with the dotenv plugin present (it is a build
+ * dependency), so the "dotenv plugin absent → only Properties backend, .properties
+ * still works" path is verified manually via `runIde` with the plugin disabled, not in CI.
  */
 class DotEnvBackend : PropsyBackend {
 

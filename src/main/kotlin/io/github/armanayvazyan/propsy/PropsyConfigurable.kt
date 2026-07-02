@@ -36,7 +36,7 @@ class PropsyConfigurable(private val project: Project) : Configurable {
 
     override fun createComponent(): JComponent {
         table.selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
-        table.emptyText.text = "No properties files configured — click Scan or +"
+        table.emptyText.text = "No .properties or .env files configured — click Scan or +"
         table.columnModel.getColumn(0).preferredWidth = 160
         table.columnModel.getColumn(1).preferredWidth = 420
 
@@ -55,7 +55,7 @@ class PropsyConfigurable(private val project: Project) : Configurable {
             .setRemoveAction { removeSelected() }
             .addExtraAction(object : DumbAwareAction(
                 "Scan",
-                "Scan modules for .properties files",
+                "Scan modules for .properties and .env files",
                 AllIcons.Actions.Refresh,
             ) {
                 override fun actionPerformed(e: AnActionEvent) = scanAndMerge()
