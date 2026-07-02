@@ -22,6 +22,7 @@ dependencies {
     intellijPlatform {
         intellijIdea("2025.2")
         bundledPlugin("com.intellij.properties")
+        plugin("ru.adelf.idea.dotenv:252.23892.201")
         testFramework(TestFrameworkType.Platform)
     }
     testImplementation("junit:junit:4.13.2")

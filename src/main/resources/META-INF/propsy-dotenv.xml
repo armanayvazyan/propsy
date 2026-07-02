@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="io.github.armanayvazyan.propsy">
+        <backend implementation="io.github.armanayvazyan.propsy.DotEnvBackend"/>
+    </extensions>
+</idea-plugin>

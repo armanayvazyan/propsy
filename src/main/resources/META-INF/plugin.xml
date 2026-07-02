@@ -11,6 +11,7 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.properties</depends>
+    <depends optional="true" config-file="propsy-dotenv.xml">ru.adelf.idea.dotenv</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="io.github.armanayvazyan.propsy.PropsySettings"/>
