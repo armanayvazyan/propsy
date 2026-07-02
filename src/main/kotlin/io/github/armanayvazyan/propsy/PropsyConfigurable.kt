@@ -42,8 +42,8 @@ class PropsyConfigurable(private val project: Project) : Configurable {
 
         val header = JBLabel(
             "<html><body style='width:480px'>" +
-                "Choose which <b>.properties</b> files appear in the Propsy tool window. " +
-                "Click <b>Scan</b> to auto-discover every <code>.properties</code> file in your modules, " +
+                "Choose which <b>.properties</b> and <b>.env</b> files appear in the Propsy tool window. " +
+                "Click <b>Scan</b> to auto-discover them across your modules, " +
                 "or <b>+</b> to add one manually. Edit the <b>Name</b> column to label each file — " +
                 "that name is what the tool window shows." +
                 "</body></html>",
@@ -78,8 +78,11 @@ class PropsyConfigurable(private val project: Project) : Configurable {
             return
         }
         val descriptor = FileChooserDescriptor(true, false, false, false, false, false)
-            .withTitle("Select Properties File")
-            .withFileFilter { it.extension.equals("properties", ignoreCase = true) }
+            .withTitle("Select .properties or .env File")
+            .withFileFilter { f ->
+                f.extension.equals("properties", ignoreCase = true) ||
+                    f.name == ".env" || f.name.startsWith(".env.")
+            }
             .withRoots(base)
         val chosen = FileChooser.chooseFile(descriptor, project, base) ?: return
         val rel = VfsUtilCore.getRelativePath(chosen, base, '/')
@@ -98,11 +101,11 @@ class PropsyConfigurable(private val project: Project) : Configurable {
         val discovered = PropsyFiles.discoverAll(project).filter { it.path !in existing }
         discovered.forEach { model.add(it) }
         val message = if (discovered.isEmpty()) {
-            "No new .properties files found."
+            "No new .properties or .env files found."
         } else {
             "Added ${discovered.size} file(s)."
         }
-        Messages.showInfoMessage(project, message, "Scan Properties Files")
+        Messages.showInfoMessage(project, message, "Scan Key/Value Files")
     }
 
     private fun removeSelected() {

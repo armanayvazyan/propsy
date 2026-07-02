@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Support for `.env` files in the Key/Value tool window (requires the
+  ".env files support" plugin, `ru.adelf.idea.dotenv`). Edits preserve
+  comments, blank lines and key order like `.properties`.
+
+### Changed
+
+- Lowered the minimum IDE to 2025.2 (`sinceBuild = 252`).
+
 ## [0.1.3]
 
 ### Changed

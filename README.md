@@ -3,7 +3,7 @@
 [![Build](https://github.com/armanayvazyan/propsy/actions/workflows/build.yml/badge.svg)](https://github.com/armanayvazyan/propsy/actions/workflows/build.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-IntelliJ plugin that shows configured `.properties` files as an **editable Key/Value table** in a tool window.
+IntelliJ plugin that shows configured `.properties` and `.env` files as an **editable Key/Value table** in a tool window (`.env` support requires the ".env files support" plugin, `ru.adelf.idea.dotenv`).
 
 - Configure file paths per-project in **Settings | Tools | Propsy** (paths are relative to the project root).
 - Pick a file from the dropdown in the **Propsy** tool window (bottom).
