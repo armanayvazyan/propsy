@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "io.github.armanayvazyan"
-version = "0.1.3"
+version = "0.1.4"
 
 repositories {
     mavenCentral()
@@ -20,8 +20,9 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        intellijIdea("2026.1")
+        intellijIdea("2025.2")
         bundledPlugin("com.intellij.properties")
+        plugin("ru.adelf.idea.dotenv:252.23892.201")
         testFramework(TestFrameworkType.Platform)
     }
     testImplementation("junit:junit:4.13.2")
@@ -30,7 +31,7 @@ dependencies {
 intellijPlatform {
     pluginConfiguration {
         ideaVersion {
-            sinceBuild = "261"
+            sinceBuild = "252"
             untilBuild = provider { null }
         }
 
@@ -58,6 +59,16 @@ intellijPlatform {
     // Publishing to JetBrains Marketplace.
     publishing {
         token = providers.environmentVariable("PUBLISH_TOKEN")
+    }
+
+    pluginVerification {
+        // ToolWindowFactory's default methods (getAnchor/getIcon/manage) are @Internal in 252;
+        // Kotlin auto-generates bridge overrides we can't avoid. Don't fail CI on that.
+        // Keep the plugin's default fatal levels, minus INTERNAL_API_USAGES.
+        failureLevel = listOf(
+            org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+            org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
+        )
     }
 }
 

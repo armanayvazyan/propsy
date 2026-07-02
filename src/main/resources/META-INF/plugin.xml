@@ -11,6 +11,7 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.properties</depends>
+    <depends optional="true" config-file="propsy-dotenv.xml">ru.adelf.idea.dotenv</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="io.github.armanayvazyan.propsy.PropsySettings"/>
@@ -24,6 +25,16 @@
                 anchor="bottom"
                 icon="/icons/propsy.svg"
                 factoryClass="io.github.armanayvazyan.propsy.PropsyToolWindowFactory"/>
+    </extensions>
+
+    <extensionPoints>
+        <extensionPoint name="backend"
+                        interface="io.github.armanayvazyan.propsy.PropsyBackend"
+                        dynamic="true"/>
+    </extensionPoints>
+
+    <extensions defaultExtensionNs="io.github.armanayvazyan.propsy">
+        <backend implementation="io.github.armanayvazyan.propsy.PropertiesBackend"/>
     </extensions>
 
     <applicationListeners/>
