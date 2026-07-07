@@ -1,8 +1,8 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI coding agents (Claude Code, Codex, Cursor, Aider, etc.) when working with code in this repository.
 
-> Mirrored in `AGENTS.md` for other AI agents. If you update one, update the other.
+> Kept in sync with `CLAUDE.md`. If you update one, update the other.
 
 ## What this is
 
@@ -46,3 +46,8 @@ All code lives in `src/main/kotlin/io/github/armanayvazyan/propsy/`. Data flows 
 - All PSI access must be wrapped in `ReadAction`/`WriteCommandAction` — follow `PropertiesFileBridge` rather than calling PSI directly elsewhere.
 - `PathEntry` is a serializable mutable bean (`@Tag("entry")`) with value `equals`/`hashCode`; settings getters/setters hand out defensive copies, so compare by value, not reference.
 - Tests extend `BasePlatformTestCase` and use `myFixture.configureByText(...)`.
+
+## Working in this repo
+
+- Before non-trivial changes, check `docs/superpowers/specs/` and `docs/superpowers/plans/` for prior design docs on the same area — this project uses a spec/plan-driven workflow.
+- Keep this file and `CLAUDE.md` in sync — they must describe the same architecture and commands.
