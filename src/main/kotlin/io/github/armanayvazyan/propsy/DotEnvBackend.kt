@@ -17,17 +17,21 @@ import com.intellij.psi.search.GlobalSearchScope
 /**
  * Backend for `.env*` files. Reads and edits line-by-line through the Document,
  * preserving comments, blank lines and key order, all inside undoable
- * [WriteCommandAction]s. Uses no dotenv-plugin PSI classes, so it loads safely;
- * it is registered only when the dotenv plugin is present (see propsy-dotenv.xml).
+ * [WriteCommandAction]s. Uses no dotenv-plugin PSI classes, so it loads safely.
+ *
+ * It is registered unconditionally in `plugin.xml` and gated at runtime on
+ * [isActive] (the `.env files support` plugin being enabled). Registering it
+ * unconditionally — rather than via an optional `config-file` `<depends>` — makes
+ * `.env` support immune to plugin load order: enabling the dotenv plugin after
+ * Propsy has already loaded takes effect after a Refresh, with no IDE restart.
  *
  * Handle (file) = [VirtualFile]. Entry handle = the same [VirtualFile]; the entry's
  * key locates its line on write.
  *
- * Note: automated tests always run with the dotenv plugin present (it is a build
- * dependency), so the "dotenv plugin absent → only Properties backend, .properties
- * still works" path is verified manually via `runIde` with the plugin disabled, not in CI.
+ * [isActive] is injectable so the gate can be tested in both states; automated tests
+ * otherwise run with the dotenv plugin present (it is a build dependency).
  */
-class DotEnvBackend : PropsyBackend {
+class DotEnvBackend(private val isActive: () -> Boolean = DotEnvPlugin::isActive) : PropsyBackend {
 
     /** groups: 1 = prefix (leading space + optional `export `), 2 = key, 3 = `=` incl. spaces, 4 = value. */
     private val pattern = Regex("""^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_.]*)(\s*=)(.*)$""")
@@ -60,6 +64,7 @@ class DotEnvBackend : PropsyBackend {
     }
 
     override fun resolve(project: Project, relPath: String): Any? = ReadAction.compute<VirtualFile?, RuntimeException> {
+        if (!isActive()) return@compute null
         val base = project.guessProjectDir() ?: return@compute null
         val vf = base.findFileByRelativePath(relPath.trim()) ?: return@compute null
         if (vf.isDirectory || !vf.isValid || !isEnvName(vf.name)) null else vf
@@ -105,6 +110,7 @@ class DotEnvBackend : PropsyBackend {
         }
 
     override fun discover(project: Project): List<PathEntry> = ReadAction.compute<List<PathEntry>, RuntimeException> {
+        if (!isActive()) return@compute emptyList()
         val base = project.guessProjectDir() ?: return@compute emptyList()
         val fileIndex = ProjectFileIndex.getInstance(project)
         val scope = GlobalSearchScope.projectScope(project)

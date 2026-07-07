@@ -62,10 +62,11 @@ intellijPlatform {
     }
 
     pluginVerification {
-        // Our own code uses no @Internal APIs (see DotEnvPlugin / PropsyConfigurable), so fail
-        // CI on internal usage. ToolWindowFactory's getAnchor/getIcon/manage are @Experimental
-        // and isApplicable/isDoNotActivateOnStart @Deprecated — Kotlin auto-generates bridge
-        // overrides we can't avoid, so those levels stay out of the fatal set.
+        // Our own code uses no @Internal APIs, so fail CI on internal usage. Two things enable
+        // this: DotEnvPlugin queries plugin presence via the non-@Internal isPluginInstalled
+        // (findEnabledPlugin/getPlugin became @Internal in 262), and PropsyToolWindowFactory is
+        // written in Java — a Kotlin ToolWindowFactory emits bridge overrides for the @Internal
+        // default methods getAnchor()/getIcon()/manage(), which Java inherits without overriding.
         failureLevel = listOf(
             org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
             org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,

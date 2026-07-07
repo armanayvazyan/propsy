@@ -11,7 +11,12 @@ import com.intellij.openapi.extensions.PluginId
 object DotEnvPlugin {
     const val ID = "ru.adelf.idea.dotenv"
 
-    /** True when the dotenv plugin is installed AND enabled (its backend is loaded). */
+    /**
+     * True when the dotenv plugin is present, so its `.env` language support is available.
+     *
+     * Uses [PluginManager.isPluginInstalled] — the only non-`@Internal` plugin-presence query
+     * (`findEnabledPlugin`/`getPlugin`/`getPlugins` are all `@ApiStatus.Internal` as of 262).
+     */
     fun isActive(): Boolean =
-        PluginManager.getInstance().findEnabledPlugin(PluginId.getId(ID)) != null
+        PluginManager.isPluginInstalled(PluginId.getId(ID))
 }

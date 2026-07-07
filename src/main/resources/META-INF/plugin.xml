@@ -11,7 +11,13 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.properties</depends>
-    <depends optional="true" config-file="propsy-dotenv.xml">ru.adelf.idea.dotenv</depends>
+    <!--
+      Intentionally NO <depends> on ru.adelf.idea.dotenv. DotEnvBackend is registered
+      unconditionally below and gates itself at runtime on DotEnvPlugin.isActive() (queried
+      via PluginManager). This keeps .env support immune to plugin load order: enabling the
+      dotenv plugin after Propsy has already loaded takes effect on Refresh, with no restart.
+    -->
+
 
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="io.github.armanayvazyan.propsy.PropsySettings"/>
@@ -35,6 +41,7 @@
 
     <extensions defaultExtensionNs="io.github.armanayvazyan.propsy">
         <backend implementation="io.github.armanayvazyan.propsy.PropertiesBackend"/>
+        <backend implementation="io.github.armanayvazyan.propsy.DotEnvBackend"/>
     </extensions>
 
     <applicationListeners/>

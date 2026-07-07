@@ -1,6 +1,8 @@
 package io.github.armanayvazyan.propsy
 
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
@@ -13,6 +15,9 @@ class DotEnvBackendTest : BasePlatformTestCase() {
 
     private fun docText(vf: VirtualFile): String =
         FileDocumentManager.getInstance().getDocument(vf)!!.text
+
+    private fun relPathOf(vf: VirtualFile): String =
+        VfsUtilCore.getRelativePath(vf, project.guessProjectDir()!!, '/')!!
 
     fun testEntriesReadInOrder() {
         val f = envFile("# comment\nFOO=1\nBAR=2\n")
@@ -46,5 +51,27 @@ class DotEnvBackendTest : BasePlatformTestCase() {
         backend.deleteEntry(project, backend.entries(f).first { it.key == "FOO" })
         assertEquals(listOf("BAR"), backend.entries(f).map { it.key })
         assertEquals("BAR=2\n", docText(f))
+    }
+
+    // Gate: the backend is always registered, but no-ops when the dotenv plugin is inactive.
+    // This makes .env support immune to plugin load order (the dotenv plugin being enabled
+    // after Propsy has already loaded, without a restart).
+
+    fun testResolveReturnsNullWhenDotEnvPluginInactive() {
+        val vf = myFixture.addFileToProject(".env", "FOO=1\n").virtualFile
+        val inactive = DotEnvBackend { false }
+        assertNull(inactive.resolve(project, relPathOf(vf)))
+    }
+
+    fun testResolveResolvesWhenDotEnvPluginActive() {
+        val vf = myFixture.addFileToProject(".env", "FOO=1\n").virtualFile
+        val active = DotEnvBackend { true }
+        assertNotNull(active.resolve(project, relPathOf(vf)))
+    }
+
+    fun testDiscoverEmptyWhenDotEnvPluginInactive() {
+        myFixture.addFileToProject(".env", "FOO=1\n")
+        val inactive = DotEnvBackend { false }
+        assertTrue(inactive.discover(project).isEmpty())
     }
 }

@@ -7,8 +7,8 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 /**
  * Integration test for the [PropsyBackend] extension-point seam: proves that
  * [PropsyFiles.resolve] and [PropsyFiles.discoverAll] route through the real
- * EP registration (plugin.xml / propsy-dotenv.xml) rather than a backend
- * constructed directly in the test.
+ * EP registration in plugin.xml rather than a backend constructed directly
+ * in the test.
  */
 class PropsyFilesTest : BasePlatformTestCase() {
 
