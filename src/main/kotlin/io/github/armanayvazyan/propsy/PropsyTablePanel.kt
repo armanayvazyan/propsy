@@ -9,15 +9,23 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.Messages
+import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleListCellRenderer
+import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import javax.swing.DefaultCellEditor
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JPanel
+import javax.swing.JTable
 import javax.swing.ListSelectionModel
+import javax.swing.table.TableCellEditor
+import javax.swing.table.TableCellRenderer
 
 /**
  * Tool window content: a path picker on top and an editable Key/Value table below.
@@ -31,7 +39,65 @@ class PropsyTablePanel(
     private val combo = ComboBox(comboModel)
     private val statusLabel = JBLabel()
     private val tableModel = PropsyTableModel(project)
-    private val table = JBTable(tableModel)
+    private val table = object : JBTable(tableModel) {
+        // Values with commented-out alternatives edit through an editable combo: pick one to swap
+        // which line is commented, or type a custom value to edit the active line in place.
+        override fun getCellEditor(row: Int, column: Int): TableCellEditor {
+            val alternatives = alternativesAt(this, row, column)
+            if (alternatives.isEmpty()) return super.getCellEditor(row, column)
+            val combo = ComboBox(arrayOf(getValueAt(row, column).toString()) + alternatives)
+            combo.isEditable = true
+            return object : DefaultCellEditor(combo) {
+                // Read the editor text directly so a typed value is not lost when editing ends on focus loss.
+                override fun getCellEditorValue(): Any? = combo.editor.item
+            }
+        }
+
+        override fun getCellRenderer(row: Int, column: Int): TableCellRenderer {
+            val modelRow = convertRowIndexToModel(row)
+            return when {
+                tableModel.sectionAt(modelRow) != null -> sectionRenderer
+                column == 0 && tableModel.entryAt(modelRow)?.section != null -> indentedKeyRenderer
+                alternativesAt(this, row, column).isNotEmpty() -> alternativesRenderer
+                else -> super.getCellRenderer(row, column)
+            }
+        }
+    }
+
+    /** Section row: a collapse chevron and the bold header name in the Key column, an empty Value cell. */
+    private val sectionRenderer = object : ColoredTableCellRenderer() {
+        override fun customizeCellRenderer(table: JTable, value: Any?, selected: Boolean, hasFocus: Boolean, row: Int, column: Int) {
+            icon = null
+            if (column != 0) return
+            val name = value?.toString() ?: ""
+            icon = if (tableModel.isCollapsed(name)) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+            append(name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        }
+    }
+
+    /** Keys inside a section are indented to line up under the header name, past its chevron. */
+    private val indentedKeyRenderer = object : ColoredTableCellRenderer() {
+        init {
+            ipad = JBUI.insetsLeft(22)
+        }
+
+        override fun customizeCellRenderer(table: JTable, value: Any?, selected: Boolean, hasFocus: Boolean, row: Int, column: Int) {
+            append(value?.toString() ?: "")
+        }
+    }
+
+    /** Values with alternatives get a dropdown arrow at the right edge. */
+    private val alternativesRenderer = object : ColoredTableCellRenderer() {
+        override fun customizeCellRenderer(table: JTable, value: Any?, selected: Boolean, hasFocus: Boolean, row: Int, column: Int) {
+            append(value?.toString() ?: "")
+            icon = AllIcons.General.ArrowDown
+            isIconOnTheRight = true
+        }
+    }
+
+    private fun alternativesAt(table: JTable, viewRow: Int, column: Int): List<String> =
+        if (column != 1) emptyList()
+        else tableModel.entryAt(table.convertRowIndexToModel(viewRow))?.alternatives.orEmpty()
 
     /** Guards combo mutations in [refreshAll] so the action listener does not fire mid-rebuild. */
     private var suppressComboEvents = false
@@ -39,6 +105,12 @@ class PropsyTablePanel(
     init {
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
         table.setShowGrid(true)
+        table.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                val row = table.rowAtPoint(e.point)
+                if (row >= 0) tableModel.toggleSection(table.convertRowIndexToModel(row))
+            }
+        })
 
         combo.addActionListener { if (!suppressComboEvents) reloadSelectedFile() }
         combo.renderer = SimpleListCellRenderer.create("") { it.name.ifBlank { it.path } }

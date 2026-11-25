@@ -7,6 +7,7 @@ class ResolvedFile(val backend: PropsyBackend, val handle: Any) {
     fun entries(): List<PropsyEntry> = backend.entries(handle)
     fun setValue(project: Project, entry: PropsyEntry, newValue: String) = backend.setValue(project, entry, newValue)
     fun setKey(project: Project, entry: PropsyEntry, newKey: String) = backend.setKey(project, entry, newKey)
+    fun selectAlternative(project: Project, entry: PropsyEntry, value: String) = backend.selectAlternative(project, entry, value)
     fun addEntry(project: Project, key: String, value: String): Boolean = backend.addEntry(project, handle, key, value)
     fun deleteEntry(project: Project, entry: PropsyEntry) = backend.deleteEntry(project, entry)
 }

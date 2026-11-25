@@ -3,8 +3,18 @@ package io.github.armanayvazyan.propsy
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 
-/** Backend-neutral key/value entry. [handle] is opaque and owned by the producing backend. */
-data class PropsyEntry(val key: String, val value: String, val handle: Any)
+/**
+ * Backend-neutral key/value entry. [handle] is opaque and owned by the producing backend.
+ * [alternatives] are inactive values for the same key (e.g. commented-out lines) the user can switch to.
+ * [section] names the group the entry is shown under, or null for ungrouped entries.
+ */
+data class PropsyEntry(
+    val key: String,
+    val value: String,
+    val handle: Any,
+    val alternatives: List<String> = emptyList(),
+    val section: String? = null,
+)
 
 /**
  * A pluggable key/value file backend — one per file format (.properties, .env).
@@ -21,6 +31,9 @@ interface PropsyBackend {
     fun setValue(project: Project, entry: PropsyEntry, newValue: String)
 
     fun setKey(project: Project, entry: PropsyEntry, newKey: String)
+
+    /** Activates [value], one of [PropsyEntry.alternatives], deactivating the current value. */
+    fun selectAlternative(project: Project, entry: PropsyEntry, value: String) {}
 
     /** Returns true if added; false if the key already exists. Appends at the end. */
     fun addEntry(project: Project, handle: Any, key: String, value: String): Boolean

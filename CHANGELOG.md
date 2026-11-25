@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-25
+
+### Added
+
+- `.properties` values that also appear as commented-out lines for the same key
+  (`#db.url=local`) get a dropdown in the Value cell. Picking an alternative
+  swaps which line is commented; typing a custom value edits the active line only.
+- Comment headers directly above properties (`#database`) group the following
+  keys into collapsible sections in the Key/Value table.
+- Settings shortcut in the Propsy tool window toolbar.
+
 ## [0.1.4] - 2026-07-02
 
 ### Added
@@ -62,7 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Properties PSI, preserving comments, blank lines, and key order, with full
   undo support.
 
-[Unreleased]: https://github.com/armanayvazyan/propsy/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/armanayvazyan/propsy/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/armanayvazyan/propsy/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/armanayvazyan/propsy/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/armanayvazyan/propsy/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/armanayvazyan/propsy/compare/v0.1.1...v0.1.2

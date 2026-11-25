@@ -11,13 +11,16 @@ class PropertiesBackend : PropsyBackend {
 
     override fun entries(handle: Any): List<PropsyEntry> =
         PropertiesFileBridge.entries(handle as PropertiesFile)
-            .map { PropsyEntry(it.key, it.value, it.property) }
+            .map { PropsyEntry(it.key, it.value, it.property, it.alternatives, it.section) }
 
     override fun setValue(project: Project, entry: PropsyEntry, newValue: String) =
         PropertiesFileBridge.setValue(project, entry.handle as IProperty, newValue)
 
     override fun setKey(project: Project, entry: PropsyEntry, newKey: String) =
         PropertiesFileBridge.setKey(project, entry.handle as IProperty, newKey)
+
+    override fun selectAlternative(project: Project, entry: PropsyEntry, value: String) =
+        PropertiesFileBridge.selectAlternative(project, entry.handle as IProperty, value)
 
     override fun addEntry(project: Project, handle: Any, key: String, value: String): Boolean =
         PropertiesFileBridge.addEntry(project, handle as PropertiesFile, key, value)
